@@ -21,6 +21,6 @@ func (app *Config) routes() http.Handler {
 
 	mux.Use(middleware.Heartbeat("/ping"))
 
-	mux.Post("/broker", app.Broker)
+	mux.Post("/", app.Broker)
 	return mux
 }
