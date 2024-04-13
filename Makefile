@@ -1,3 +1,4 @@
+AUTH_BINARY=authApp
 FRONT_END_BINARY=frontApp
 BROKER_BINARY=brokerApp
 
@@ -25,6 +26,12 @@ down:
 build_broker:
 	@echo Building broker binary...
 	cd ./broker-service && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ${BROKER_BINARY} ./cmd/api
+	@echo Done!
+
+## build_auth: builds the broker binary as a linux executable
+build_auth:
+	@echo Building auth binary...
+	cd ./authentication-service && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ${AUTH_BINARY} ./cmd/api
 	@echo Done!
 
 ## build_front: builds the front end binary
