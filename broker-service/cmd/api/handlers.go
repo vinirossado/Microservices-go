@@ -33,7 +33,10 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	err := app.ReadJSON(w, r, &requestPayload)
 
 	if err != nil {
-		app.ErrorJSON(w, err, http.StatusBadRequest)
+		err := app.ErrorJSON(w, err, http.StatusBadRequest)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -42,7 +45,10 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		app.authenticate(w, requestPayload.Auth)
 
 	default:
-		app.ErrorJSON(w, err, http.StatusBadRequest)
+		err := app.ErrorJSON(w, err, http.StatusBadRequest)
+		if err != nil {
+			return
+		}
 	}
 
 }
@@ -53,7 +59,10 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	request, err := http.NewRequest("POST", "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
 
 	if err != nil {
-		app.ErrorJSON(w, err)
+		err := app.ErrorJSON(w, err)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -61,17 +70,26 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	response, err := client.Do(request)
 
 	if err != nil {
-		app.ErrorJSON(w, err)
+		err := app.ErrorJSON(w, err)
+		if err != nil {
+			return
+		}
 		return
 	}
 
 	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusUnauthorized {
-		app.ErrorJSON(w, errors.New("invalid credentials"), http.StatusUnauthorized)
+		err := app.ErrorJSON(w, errors.New("invalid credentials"), http.StatusUnauthorized)
+		if err != nil {
+			return
+		}
 		return
 	} else if response.StatusCode != http.StatusAccepted {
-		app.ErrorJSON(w, errors.New("error calling auth service"), http.StatusInternalServerError)
+		err := app.ErrorJSON(w, errors.New("error calling auth service"), http.StatusInternalServerError)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -80,12 +98,18 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	err = json.NewDecoder(response.Body).Decode(&authResponse)
 
 	if err != nil {
-		app.ErrorJSON(w, err)
+		err := app.ErrorJSON(w, err)
+		if err != nil {
+			return
+		}
 		return
 	}
 
 	if authResponse.Error {
-		app.ErrorJSON(w, errors.New(authResponse.Message), http.StatusUnauthorized)
+		err := app.ErrorJSON(w, errors.New(authResponse.Message), http.StatusUnauthorized)
+		if err != nil {
+			return
+		}
 		return
 	}
 
