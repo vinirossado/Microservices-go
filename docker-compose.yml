@@ -7,10 +7,12 @@ services:
       dockerfile: ./broker-service.dockerfile
     restart: always
     ports:
-      - "8081:8081"
+      - "8081:80"
     deploy:
       mode: replicated
       replicas: 1
+    networks:
+    - backend
 
   authentication-service:
     build:
@@ -18,12 +20,14 @@ services:
       dockerfile: ./authentication-service.dockerfile
     restart: always
     ports:
-      - "8082:8082"
+      - "8082:80"
     deploy:
       mode: replicated
       replicas: 1
     environment:
-      DSN: "host=postgres port=5432 user=postgres password=postgres dbname=postgres sslmode=disable timezone=UTC connect_timeout=5"
+      DSN: "host=postgres port=5432 user=postgres password=postgres dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+    networks:
+      - backend
 
   postgres:
     image: "postgres:14"
@@ -36,3 +40,9 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - ./db-data/postgres/:/var/lib/postgresql/data
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
