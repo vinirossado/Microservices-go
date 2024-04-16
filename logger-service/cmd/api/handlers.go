@@ -24,6 +24,7 @@ func (app *Config) WriteLogs(w http.ResponseWriter, r *http.Request) {
 
 	err := app.Models.LogEntry.Insert(event)
 	fmt.Println("err", err)
+
 	if err != nil {
 		_ = app.ErrorJSON(w, err)
 		return
@@ -34,6 +35,7 @@ func (app *Config) WriteLogs(w http.ResponseWriter, r *http.Request) {
 		Message: "logged",
 	}
 
+	fmt.Println("CHEGOU AQUI", resp)
 	app.WriteJSON(w, http.StatusAccepted, resp)
 
 }

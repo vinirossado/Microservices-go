@@ -70,49 +70,35 @@ func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 	if err != nil {
 		_ = app.ErrorJSON(w, err)
 		return
-
 	}
 
 	logServiceURL := "http://logger-service/log"
 
-	request, err := http.NewRequest("POST", logServiceURL, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPost, logServiceURL, bytes.NewBuffer(jsonData))
 
-	if err != nil {
-		err := app.ErrorJSON(w, err)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	response, err := client.Do(req)
+
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusAccepted {
+		err := app.ErrorJSON(w, errors.New("error calling log service"), http.StatusInternalServerError)
 		if err != nil {
 			return
 		}
-
-		request.Header.Set("Content-Type", "application/json")
-		client := &http.Client{}
-		response, err := client.Do(request)
-
-		fmt.Println("RESPONSE", response)
-		fmt.Println("RESPONSE ERR FROM LOGGER", err)
-		if err != nil {
-			return
-		}
-
-		defer response.Body.Close()
-
-		if response.StatusCode != http.StatusAccepted {
-			err := app.ErrorJSON(w, errors.New("error calling log service"), http.StatusInternalServerError)
-			if err != nil {
-				return
-			}
-			return
-		}
-
-		var payload JsonResponse
-		payload.Error = false
-		payload.Message = "Logged"
-
-		err = app.WriteJSON(w, http.StatusAccepted, payload)
-		if err != nil {
-			return
-		}
-
+		return
 	}
+
+	var payload JsonResponse
+	payload.Error = false
+	payload.Message = "Logged"
+
+	err = app.WriteJSON(w, http.StatusAccepted, payload)
+	if err != nil {
+		return
+	}
+
 }
 
 func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
