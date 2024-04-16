@@ -14,9 +14,9 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 
-	err := app.ReadJSON(w, r, &requestPayload)
+	err := app.readJSON(w, r, &requestPayload)
 	if err != nil {
-		_ = app.ErrorJSON(w, err, http.StatusBadRequest)
+		_ = app.errorJSON(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -24,21 +24,21 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 	user, err := app.Models.User.GetByEmail(requestPayload.Email)
 
 	if err != nil {
-		_ = app.ErrorJSON(w, errors.New("invalid Credentials"), http.StatusBadRequest)
+		_ = app.errorJSON(w, errors.New("invalid Credentials"), http.StatusBadRequest)
 		return
 	}
 
 	valid, err := user.PasswordMatches(requestPayload.Password)
 
 	if err != nil || !valid {
-		_ = app.ErrorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
+		_ = app.errorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
 		return
 	}
 
 	err = app.logRequest("authentication", fmt.Sprintf("User %s logged in", user.Email))
 
 	if err != nil {
-		_ = app.ErrorJSON(w, err, http.StatusInternalServerError)
+		_ = app.errorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -48,7 +48,7 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 		Data:    user,
 	}
 
-	_ = app.WriteJSON(w, http.StatusAccepted, payload)
+	_ = app.writeJSON(w, http.StatusAccepted, payload)
 
 }
 

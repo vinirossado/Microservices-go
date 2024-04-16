@@ -31,16 +31,16 @@ func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 		Message: "Hit the Broker",
 	}
 
-	_ = app.WriteJSON(w, http.StatusOK, payload)
+	_ = app.writeJSON(w, http.StatusOK, payload)
 }
 
 func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	var requestPayload RequestPayload
 
-	err := app.ReadJSON(w, r, &requestPayload)
+	err := app.readJSON(w, r, &requestPayload)
 
 	if err != nil {
-		err := app.ErrorJSON(w, err, http.StatusBadRequest)
+		err := app.errorJSON(w, err, http.StatusBadRequest)
 		if err != nil {
 			return
 		}
@@ -53,7 +53,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	case "log":
 		app.logItem(w, requestPayload.Log)
 	default:
-		err := app.ErrorJSON(w, err, http.StatusBadRequest)
+		err := app.errorJSON(w, err, http.StatusBadRequest)
 		if err != nil {
 			return
 		}
@@ -65,7 +65,7 @@ func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 	jsonData, err := json.MarshalIndent(entry, "", "\t")
 
 	if err != nil {
-		_ = app.ErrorJSON(w, err)
+		_ = app.errorJSON(w, err)
 		return
 	}
 
@@ -80,7 +80,7 @@ func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusAccepted {
-		err := app.ErrorJSON(w, errors.New("error calling log service"), http.StatusInternalServerError)
+		err := app.errorJSON(w, errors.New("error calling log service"), http.StatusInternalServerError)
 		if err != nil {
 			return
 		}
@@ -91,7 +91,7 @@ func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 	payload.Error = false
 	payload.Message = "Logged"
 
-	err = app.WriteJSON(w, http.StatusAccepted, payload)
+	err = app.writeJSON(w, http.StatusAccepted, payload)
 	if err != nil {
 		return
 	}
@@ -101,10 +101,10 @@ func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	jsonData, _ := json.MarshalIndent(a, "", "\t")
 
-	request, err := http.NewRequest("POST", "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
+	request, err := http.NewRequest(http.MethodPost, "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
 
 	if err != nil {
-		err := app.ErrorJSON(w, err)
+		err := app.errorJSON(w, err)
 		if err != nil {
 			return
 		}
@@ -115,7 +115,7 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	response, err := client.Do(request)
 
 	if err != nil {
-		err := app.ErrorJSON(w, err)
+		err := app.errorJSON(w, err)
 		if err != nil {
 			return
 		}
@@ -130,13 +130,13 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	}(response.Body)
 
 	if response.StatusCode == http.StatusUnauthorized {
-		err := app.ErrorJSON(w, errors.New("invalid credentials"), http.StatusUnauthorized)
+		err := app.errorJSON(w, errors.New("invalid credentials"), http.StatusUnauthorized)
 		if err != nil {
 			return
 		}
 		return
 	} else if response.StatusCode != http.StatusAccepted {
-		err := app.ErrorJSON(w, errors.New("error calling auth service"), http.StatusInternalServerError)
+		err := app.errorJSON(w, errors.New("error calling auth service"), http.StatusInternalServerError)
 		if err != nil {
 			return
 		}
@@ -148,7 +148,7 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	err = json.NewDecoder(response.Body).Decode(&authResponse)
 
 	if err != nil {
-		err := app.ErrorJSON(w, err)
+		err := app.errorJSON(w, err)
 		if err != nil {
 			return
 		}
@@ -156,7 +156,7 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	}
 
 	if authResponse.Error {
-		err := app.ErrorJSON(w, errors.New(authResponse.Message), http.StatusUnauthorized)
+		err := app.errorJSON(w, errors.New(authResponse.Message), http.StatusUnauthorized)
 		if err != nil {
 			return
 		}
@@ -168,5 +168,5 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	payload.Message = "Authenticated"
 	payload.Data = authResponse.Data
 
-	_ = app.WriteJSON(w, http.StatusAccepted, payload)
+	_ = app.writeJSON(w, http.StatusAccepted, payload)
 }
