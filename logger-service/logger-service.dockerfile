@@ -4,7 +4,7 @@ FROM alpine:latest
 RUN mkdir /app
 
 # Copy binary from builder stage
-COPY loggerServiceApp /app/
+COPY loggerServiceApp /app
 
 # Set working directory
 WORKDIR /app

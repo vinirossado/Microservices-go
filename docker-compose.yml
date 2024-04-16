@@ -12,7 +12,7 @@ services:
       mode: replicated
       replicas: 1
     networks:
-    - backend
+      - backend
 
   authentication-service:
     build:
@@ -40,6 +40,29 @@ services:
     networks:
       - backend
 
+  mailer-service:
+    build:
+      context: ./mail-service
+      dockerfile: ./mail-service.dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      MAIL_DOMAIN: mailhog
+      MAIL_HOST: mailhog
+      MAIL_MAILER: smtp
+      MAIL_PORT: 1025
+      MAIL_ENCRYPTION: null
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      FROM_NAME: "John Smith"
+      FROM_ADDRESS: john.smith@example.com
+    depends_on:
+      - mailhog
+    networks:
+      - backend
+
   postgres:
     image: "postgres:14"
     restart: always
@@ -60,14 +83,22 @@ services:
     ports:
       - "27017:27017"
     environment:
-        MONGO_INITDB_DATABASE: logs
-        MONGO_INITDB_ROOT_USERNAME: admin
-        MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - ./db-data/mongo/:/data/db
     networks:
       - backend
 
+  mailhog:
+    image: "mailhog/mailhog:latest"
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: on-failure
+    networks:
+      - backend
 networks:
   backend:
     driver: bridge

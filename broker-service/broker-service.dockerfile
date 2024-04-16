@@ -4,7 +4,7 @@ FROM alpine:latest
 RUN mkdir /app
 
 # Copy binary from builder stage
-COPY brokerApp /app/
+COPY brokerApp /app
 
 # Set working directory
 WORKDIR /app
