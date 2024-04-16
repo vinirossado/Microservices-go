@@ -63,6 +63,17 @@ services:
     networks:
       - backend
 
+  listener-service:
+    build:
+      context: ./listener-service
+      dockerfile: ./listener-service.dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - backend
+
   postgres:
     image: "postgres:14"
     restart: always
@@ -91,6 +102,19 @@ services:
     networks:
       - backend
 
+  rabbitmq:
+    image: "rabbitmq:3.13-alpine"
+    restart: always
+    ports:
+      - "5672:5672"
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - ./db-data/rabbitmq/:/var/lib/rabbitmq
+    networks:
+        - backend
+
   mailhog:
     image: "mailhog/mailhog:latest"
     ports:
@@ -99,6 +123,7 @@ services:
     restart: on-failure
     networks:
       - backend
+
 networks:
   backend:
     driver: bridge

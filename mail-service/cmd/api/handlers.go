@@ -38,7 +38,7 @@ func (app *Config) SendMail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload := jsonResponse{
+	payload := JsonResponse{
 		Error:   false,
 		Message: "sent to " + requestPayload.To,
 	}
