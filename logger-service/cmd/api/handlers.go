@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log-service/cmd/data"
 	"net/http"
 )
@@ -15,17 +16,16 @@ func (app *Config) WriteLogs(w http.ResponseWriter, r *http.Request) {
 
 	_ = app.ReadJSON(w, r, &requestPayload)
 
+	fmt.Println("requestPayload: FE", requestPayload)
 	event := data.LogEntry{
 		Name: requestPayload.Name,
 		Data: requestPayload.Data,
 	}
 
 	err := app.Models.LogEntry.Insert(event)
+	fmt.Println("err", err)
 	if err != nil {
-		err := app.ErrorJSON(w, err)
-		if err != nil {
-			return
-		}
+		_ = app.ErrorJSON(w, err)
 		return
 	}
 

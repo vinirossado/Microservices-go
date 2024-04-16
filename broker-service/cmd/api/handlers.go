@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -64,14 +65,14 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 	jsonData, err := json.MarshalIndent(entry, "", "\t")
 
+	fmt.Println("jsonData", string(jsonData))
+
 	if err != nil {
-		err := app.ErrorJSON(w, err)
-		if err != nil {
-			return
-		}
+		_ = app.ErrorJSON(w, err)
 		return
 
 	}
+
 	logServiceURL := "http://logger-service/log"
 
 	request, err := http.NewRequest("POST", logServiceURL, bytes.NewBuffer(jsonData))
@@ -85,16 +86,14 @@ func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 		request.Header.Set("Content-Type", "application/json")
 		client := &http.Client{}
 		response, err := client.Do(request)
+
+		fmt.Println("RESPONSE", response)
+		fmt.Println("RESPONSE ERR FROM LOGGER", err)
 		if err != nil {
 			return
 		}
 
-		defer func(Body io.ReadCloser) {
-			err := Body.Close()
-			if err != nil {
-				
-			}
-		}(response.Body)
+		defer response.Body.Close()
 
 		if response.StatusCode != http.StatusAccepted {
 			err := app.ErrorJSON(w, errors.New("error calling log service"), http.StatusInternalServerError)

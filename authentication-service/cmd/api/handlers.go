@@ -16,10 +16,7 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	err := app.ReadJSON(w, r, &requestPayload)
 	if err != nil {
-		err := app.ErrorJSON(w, err, http.StatusBadRequest)
-		if err != nil {
-			return
-		}
+		_ = app.ErrorJSON(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -27,20 +24,14 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 	user, err := app.Models.User.GetByEmail(requestPayload.Email)
 
 	if err != nil {
-		err := app.ErrorJSON(w, errors.New("invalid Credentials"), http.StatusBadRequest)
-		if err != nil {
-			return
-		}
+		_ = app.ErrorJSON(w, errors.New("invalid Credentials"), http.StatusBadRequest)
 		return
 	}
 
 	valid, err := user.PasswordMatches(requestPayload.Password)
 
 	if err != nil || !valid {
-		err := app.ErrorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
-		if err != nil {
-			return
-		}
+		_ = app.ErrorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
 		return
 	}
 
@@ -57,10 +48,7 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 		Data:    user,
 	}
 
-	err = app.WriteJSON(w, http.StatusAccepted, payload)
-	if err != nil {
-		return
-	}
+	_ = app.WriteJSON(w, http.StatusAccepted, payload)
 
 }
 
@@ -84,10 +72,9 @@ func (app *Config) logRequest(name, data string) error {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-
 	client := &http.Client{}
-
 	_, err = client.Do(req)
+
 	if err != nil {
 		return err
 	}
