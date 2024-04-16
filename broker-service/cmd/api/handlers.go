@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -64,8 +63,6 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 
 func (app *Config) logItem(w http.ResponseWriter, entry LogPayload) {
 	jsonData, err := json.MarshalIndent(entry, "", "\t")
-
-	fmt.Println("jsonData", string(jsonData))
 
 	if err != nil {
 		_ = app.ErrorJSON(w, err)
