@@ -72,9 +72,9 @@ func (consumer *Consumer) Listen(topics []string) error {
 
 	forever := make(chan bool)
 	go func() {
-		for d := range messages {
+		for message := range messages {
 			var payload Payload
-			_ = json.Unmarshal(d.Body, &payload)
+			_ = json.Unmarshal(message.Body, &payload)
 
 			go handlePayload(payload)
 		}
