@@ -231,7 +231,7 @@ func (app *Config) PushToQueue(name, msg string) error {
 }
 
 func (app *Config) logItemViaRPC(w http.ResponseWriter, l LogPayload) {
-	client, err := rpc.Dial("tpc", "logger-service:5001")
+	client, err := rpc.Dial("tcp", "logger-service:5001")
 	if err != nil {
 		app.errorJSON(w, err)
 		return
@@ -255,5 +255,8 @@ func (app *Config) logItemViaRPC(w http.ResponseWriter, l LogPayload) {
 	}
 
 	app.writeJSON(w, http.StatusAccepted, payload)
+}
+
+func (app *Config) logItemViaGRPC(w http.ResponseWriter, l LogPayload) {
 
 }

@@ -70,7 +70,6 @@ func main() {
 	if err != nil {
 		log.Panic()
 	}
-
 }
 
 func (app *Config) rpcListen() error {

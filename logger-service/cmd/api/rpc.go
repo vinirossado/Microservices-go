@@ -32,7 +32,3 @@ func (r *RPCServer) LogInfo(payload RPCPayload, resp *string) error {
 
 	return nil
 }
-
-func main() {
-
-}
